@@ -8,7 +8,11 @@ def HomeScreen(page, navigate_to):
             ft.Column(
                 [
                     ft.Image(src="assets/images/portada.png", width=250),
+<<<<<<< HEAD
                     ft.Text("Carrera del Amor 💕", style=title_style(), text_align="center"),
+=======
+                    ft.Text("Búsqueda del tesoro 💕", style=title_style(), text_align="center"),
+>>>>>>> branch
                     ft.Text(
                         "Una aventura romántica para descubrir el mayor tesoro: su amor.",
                         style=text_style(),
