@@ -1,47 +1,76 @@
+# screens/level_screen.py  (parche recomendado)
 import flet as ft
 from app.data import LEVELS
 from app.utils import check_password
 from app.styles import title_style, text_style
 
 def LevelScreen(page, navigate_to, level_id):
-    level = LEVELS[level_id]
+    level = LEVELS.get(level_id) if level_id in LEVELS else LEVELS.get(str(level_id))
     input_field = ft.TextField(label="Escribe la palabra clave ✨", width=250)
 
+    def show_snack(msg):
+        snack = ft.SnackBar(ft.Text(msg))
+        page.open(snack)   # <<-- usado en lugar de page.snack_bar = ...
+        
+    
     def on_submit(e):
-        if check_password(level_id, input_field.value, LEVELS):
-            next_levels = level["next"]
-            if len(next_levels) == 1:
-                navigate_to(f"level_{next_levels[0]}" if next_levels[0] != "success" else "success")
-            else:
-                # Si hay varias rutas posibles, muestra opciones
-                page.dialog = ft.AlertDialog(
-                    title=ft.Text("Elige tu siguiente destino ❤️"),
-                    content=ft.Column(
-                        [
-                            ft.ElevatedButton(
-                                f"Ir a ruta {n}",
-                                on_click=lambda _, n=n: (
-                                    setattr(page.dialog, "open", False),
-                                    navigate_to(f"level_{n}")
-                                ),
-                            )
-                            for n in next_levels
-                        ]
-                    ),
-                )
-                page.dialog.open = True
-                page.update()
-        else:
-            page.snack_bar = ft.SnackBar(ft.Text("Contraseña incorrecta 😅"), open=True)
-            page.update()
+        try:
+            password = (input_field.value or "").strip()
+            print(f"[DEBUG] on_submit invoked. level_id={level_id!r}, password={password!r}")
+        except Exception as ex:
+            print("[ERROR] reading input_field.value:", ex)
+            show_snack("Error leyendo el campo. Revisa la consola.")
+            return
 
+        if not password:
+            show_snack("Por favor escribe una palabra clave ✍️")
+            return
+
+        try:
+            ok = check_password(level_id, password, LEVELS)
+        except Exception as ex:
+            print("[ERROR] check_password raised:", ex)
+            show_snack("Error interno validando contraseña (ver consola).")
+            return
+
+        if ok:
+            next_levels = level.get("next", [])
+            print(f"[DEBUG] password OK. next_levels = {next_levels!r}")
+            if len(next_levels) == 1:
+                ns = next_levels[0]
+                # usa el mismo formato que main.navigate_to (sin slash)
+                route = "success" if ns == "success" else f"level_{ns}"
+                print(f"[DEBUG] navigating to {route}")
+                navigate_to(route)
+                page.update()
+                return
+
+            # varias rutas: construir dialog y abrirlo con page.open_dialog
+            buttons = []
+            for n in next_levels:
+                target = "success" if n == "success" else f"level_{n}"
+                def make_onclick(t=target):
+                    def _onclick(ev):
+                        page.close_dialog()   # cierra dialog
+                        navigate_to(t)
+                        page.update()
+                    return _onclick
+                buttons.append(ft.ElevatedButton(f"Ir a {n}", on_click=make_onclick()))
+
+            dlg = ft.AlertDialog(title=ft.Text("Elige tu siguiente destino ❤️"), content=ft.Column(buttons))
+            page.open_dialog(dlg)   # <<-- usado en lugar de asignar page.dialog
+        else:
+            print("[DEBUG] contraseña incorrecta")
+            show_snack("Contraseña incorrecta 😅")
+
+    # layout
     return ft.View(
-        f"/level_{level_id}",
+        f"/level_{level_id}",  # ruta de la View (esto está bien)
         controls=[
             ft.Column(
                 [
-                    ft.Image(src=level["image"], width=200),
-                    ft.Text(level["text"], style=text_style(), text_align="center"),
+                    ft.Image(src=level.get("image",""), width=200) if level.get("image") else ft.Container(),
+                    ft.Text(level.get("text",""), style=text_style(), text_align="center"),
                     input_field,
                     ft.ElevatedButton("Confirmar 💫", on_click=on_submit, bgcolor="#E91E63", color="white"),
                 ],
