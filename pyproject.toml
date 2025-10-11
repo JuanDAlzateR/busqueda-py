@@ -1,0 +1,13 @@
+[tool.flet]
+# Nombre y versión de la app
+name = "busqueda_py"
+version = "1.0.0"
+description = "App para la búsqueda del tesoro con Flet"
+author = "Juan D. Alzate"
+
+[tool.flet.flutter]
+# Puedes incluir configuraciones específicas del proyecto Flutter
+base_url = "."
+
+[tool.flet.flutter.pubspec.dependency_overrides]
+webview_flutter_android = "4.10.1"
