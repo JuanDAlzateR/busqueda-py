@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Escanear QR</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f3f3f3;
+        font-family: sans-serif;
+      }
+      #reader {
+        width: 90%;
+        max-width: 400px;
+        margin: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>📷 Escanea tu código QR</h3>
+    <div id="reader"></div>
+
+    <script>
+      function onScanSuccess(decodedText) {
+        alert("Código detectado: " + decodedText);
+        // ✅ Redirige de vuelta a la app (ajusta el puerto si es necesario)
+        window.location.href = "http://192.168.1.80:8550/?qr=" + encodeURIComponent(decodedText);
+      }
+
+      const html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        onScanSuccess
+      );
+    </script>
+  </body>
+</html>
