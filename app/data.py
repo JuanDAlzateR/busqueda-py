@@ -28,7 +28,7 @@ LEVELS = {
     },
     "final": {
         "text": "💍 Has completado la carrera del amor. Prepárate para el gran momento.",
-        "password": "",
+        "password": "?",
         "next": ["success"],
         "image": "assets/images/corazon.png",
     },

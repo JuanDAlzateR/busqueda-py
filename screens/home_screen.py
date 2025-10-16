@@ -1,10 +1,13 @@
 import flet as ft
 from app.styles import title_style, text_style
+from components.stats_bar import StatsBar
 
 def HomeScreen(page, navigate_to):
+    stats = page.session.get("stats")
     return ft.View(
         "/home",
         controls=[
+            StatsBar(stats),  # 👈 Barra superior con los stats
             ft.Column(
                 [
                     ft.Image(src="assets/images/portada.png", width=250),
