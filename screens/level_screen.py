@@ -23,10 +23,12 @@ def LevelScreen(page, navigate_to, level_id):
         def run_scan():
             result = open_qr_scanner()
             if result:
-                page.snack_bar = ft.SnackBar(ft.Text(f"Código leído: {result} ✅"), open=True)
+                snack =ft.SnackBar(ft.Text(f"Código leído: {result} ✅"), open=True)
+                page.open(snack) 
                 page.update()
             else:
-                page.snack_bar = ft.SnackBar(ft.Text("No se detectó ningún código 😅"), open=True)
+                snack =ft.SnackBar(ft.Text("No se detectó ningún código 😅"), open=True)
+                page.open(snack)
                 page.update()
 
         threading.Thread(target=run_scan).start()
