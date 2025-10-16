@@ -14,8 +14,7 @@ def OptionsScreen(page, navigate_to, previous_level):
                         style=text_style(),
                         text_align="center",
                     ),
-                    
-                    next
+              
                     ft.ElevatedButton(
                         "Comenzar aventura 💌",
                         on_click=lambda _: navigate_to("level_1"),

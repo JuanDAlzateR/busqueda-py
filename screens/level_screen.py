@@ -1,18 +1,35 @@
 # screens/level_screen.py  (parche recomendado)
 import flet as ft
 import asyncio
+import threading
 from app.data import LEVELS
-from app.utils import check_password
+from app.utils.utils import check_password
+from app.utils.utils import add_stats
+from app.utils.qr import open_qr_scanner
 from app.styles import title_style, text_style
+from components.stats_bar import StatsBar
 
 def LevelScreen(page, navigate_to, level_id):
+    stats = page.session.get("stats")
     level = LEVELS.get(level_id) if level_id in LEVELS else LEVELS.get(str(level_id))
     input_field = ft.TextField(label="Escribe la palabra clave ✨", width=250)
 
     def show_snack(msg):
         snack = ft.SnackBar(ft.Text(msg))
         page.open(snack)   # <<-- usado en lugar de page.snack_bar = ...
-        
+    
+    def scan_qr(e):
+        # Evita que el UI se congele usando un hilo
+        def run_scan():
+            result = open_qr_scanner()
+            if result:
+                page.snack_bar = ft.SnackBar(ft.Text(f"Código leído: {result} ✅"), open=True)
+                page.update()
+            else:
+                page.snack_bar = ft.SnackBar(ft.Text("No se detectó ningún código 😅"), open=True)
+                page.update()
+
+        threading.Thread(target=run_scan).start()
     
     def on_submit(e):
         try:
@@ -56,6 +73,7 @@ def LevelScreen(page, navigate_to, level_id):
                         # usar un pequeño delay para que Flet procese el cierre
                         await asyncio.sleep(0.1)
                         navigate_to(t)
+                        update_stats(page,"tiempo",2)
                         page.update()                        
                     return _onclick
                 buttons.append(ft.ElevatedButton(f"Ir a {n}", on_click=make_onclick()))
@@ -67,15 +85,17 @@ def LevelScreen(page, navigate_to, level_id):
             show_snack("Contraseña incorrecta 😅")
 
     # layout
-    return ft.View(
+    return ft.View(       
         f"/level_{level_id}",  # ruta de la View (esto está bien)
         controls=[
+            StatsBar(stats),
             ft.Column(
                 [
                     ft.Image(src=level.get("image",""), width=200) if level.get("image") else ft.Container(),
                     ft.Text(level.get("text",""), style=text_style(), text_align="center"),
                     input_field,
                     ft.ElevatedButton("Confirmar 💫", on_click=on_submit, bgcolor="#E91E63", color="white"),
+                    ft.ElevatedButton("📷 Escanear código", on_click=scan_qr, bgcolor="#2196F3", color="white"),
                 ],
                 alignment="center",
                 horizontal_alignment="center",
