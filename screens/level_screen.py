@@ -1,5 +1,6 @@
 # screens/level_screen.py  (parche recomendado)
 import flet as ft
+import asyncio
 from app.data import LEVELS
 from app.utils import check_password
 from app.styles import title_style, text_style
@@ -50,15 +51,17 @@ def LevelScreen(page, navigate_to, level_id):
             for n in next_levels:
                 target = "success" if n == "success" else f"level_{n}"
                 def make_onclick(t=target):
-                    def _onclick(ev):
-                        page.close_dialog()   # cierra dialog
+                    async def _onclick(ev):
+                        page.close(dlg)   
+                        # usar un pequeño delay para que Flet procese el cierre
+                        await asyncio.sleep(0.1)
                         navigate_to(t)
-                        page.update()
+                        page.update()                        
                     return _onclick
                 buttons.append(ft.ElevatedButton(f"Ir a {n}", on_click=make_onclick()))
 
             dlg = ft.AlertDialog(title=ft.Text("Elige tu siguiente destino ❤️"), content=ft.Column(buttons))
-            page.open_dialog(dlg)   # <<-- usado en lugar de asignar page.dialog
+            page.open(dlg)   # <<-- usado en lugar de asignar page.dialog
         else:
             print("[DEBUG] contraseña incorrecta")
             show_snack("Contraseña incorrecta 😅")
